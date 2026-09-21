@@ -1,0 +1,32 @@
+﻿===== Exploration floor verification (stationary, 20000 rounds)=====
+K=10 gamma=0.995
+Note: Full n_eff=real pulls; Discounted n_eff<=1/(1-gamma)
+
+--- Full history---
+round     N           best_arm    explore_term
+   2000      2000        -           0.194954        
+4000      4000        -           0.143999        
+6000      6000        -           0.120414        
+8000      8000        -           0.105991        
+10000     10000       -           0.095971        
+12000     12000       -           0.088472        
+14000     14000       -           0.0825785       
+16000     16000       -           0.0777834       
+18000     18000       -           0.0737796       
+20000     20000       -           0.0703688       
+Conclusion: Full n_eff grows linearly, exploration term -> 0
+
+--- Discounted (gamma=0.995)---
+n_eff upper bound = 1/(1-gamma) = 200
+round     N           best_arm    explore_term
+   2000      2000        -           0.194954        
+4000      4000        -           0.203646        
+6000      6000        -           0.208563        
+8000      8000        -           0.211983        
+10000     10000       -           0.214598        
+12000     12000       -           0.216711        
+14000     14000       -           0.218482        
+16000     16000       -           0.220005        
+18000     18000       -           0.221339        
+20000     20000       -           0.222526        
+Conclusion: Discounted n_eff <=  200, exploration term converges to ~ 0.222526, has floor, does not -> 0
