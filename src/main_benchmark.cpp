@@ -178,11 +178,11 @@ Agg run_multi(const EnvFactory& env_factory,
     return a;
 }
 
-void add_features_adaptive(AdaptiveHCB3Policy& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
+void add_features_adaptive(AdaptiveSOFPolicy& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
     std::mt19937_64 rng(seed);
     for (std::size_t i = 0; i < K; ++i) p.set_feature(i, make_sparse_random(dim, nnz, rng));
 }
-void add_features_dal(DAL_HCB3& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
+void add_features_dal(DAL_SOF& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
     std::mt19937_64 rng(seed);
     for (std::size_t i = 0; i < K; ++i) p.set_feature(i, make_sparse_random(dim, nnz, rng));
 }
@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
     if (argc > 4) window = static_cast<std::size_t>(std::stoull(argv[4]));
     if (argc > 5) num_seeds = static_cast<int>(std::stoi(argv[5]));
 
-    std::cout << "HCB3 multi-seed benchmark\n";
+    std::cout << "SOF multi-seed benchmark\n";
     std::cout << "Params: rounds=" << rounds << " arms=" << num_arms
               << " feat_dim=" << feature_dim << " nnz/arm=" << feature_nnz
               << " detector window=" << window << " streak=" << streak_needed
@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
             AdaptiveConfig cfg;
             cfg.mode = mode; cfg.window_size = win; cfg.gamma = gm;
             cfg.exploration_dim = feature_dim; cfg.v1 = 1.0; cfg.v2 = 1.0; cfg.xi = 0.0;
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
             add_features_adaptive(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9000 + s));
             return p;
         };
@@ -309,9 +309,9 @@ int main(int argc, char** argv) {
         abrupt_rows.push_back({name, run_multi(ef, pf, rounds, static_cast<long long>(switch_round), window, streak_needed, ratio_threshold, num_seeds)});
     };
 
-    push_adaptive("HCB3 Full", StatsMode::Full, window, gamma);
-    push_adaptive("HCB3 SlidingWindow(500)", StatsMode::SlidingWindow, window, gamma);
-    push_adaptive("HCB3 Discounted(0.995)", StatsMode::Discounted, window, gamma);
+    push_adaptive("SOF Full", StatsMode::Full, window, gamma);
+    push_adaptive("SOF SlidingWindow(500)", StatsMode::SlidingWindow, window, gamma);
+    push_adaptive("SOF Discounted(0.995)", StatsMode::Discounted, window, gamma);
 
     push_simple("SW-UCB(500)", [&](std::uint64_t s){ return std::make_shared<SlidingWindowUCB>(num_arms, window, 1000 + s); });
     push_simple("Epsilon-Greedy(0.1)", [&](std::uint64_t s){ return std::make_shared<EpsilonGreedyPolicy>(num_arms, 0.1, 1100 + s); });
@@ -328,11 +328,11 @@ int main(int argc, char** argv) {
             return std::make_shared<AbruptSwitchBandit>(means, switch_round, best_arm, second_arm, static_cast<std::uint64_t>(300 + s));
         };
         PolicyFactory pf = [&](std::uint64_t s) -> std::shared_ptr<Policy> {
-            auto p = std::make_shared<DAL_HCB3>(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
+            auto p = std::make_shared<DAL_SOF>(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
             add_features_dal(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9100 + s));
             return p;
         };
-        abrupt_rows.push_back({"DAL+HCB3 (P0)", run_multi(ef, pf, rounds, static_cast<long long>(switch_round), window, streak_needed, ratio_threshold, num_seeds)});
+        abrupt_rows.push_back({"DAL+SOF (P0)", run_multi(ef, pf, rounds, static_cast<long long>(switch_round), window, streak_needed, ratio_threshold, num_seeds)});
     }
     push_simple("TS-CD (P0)", [&](std::uint64_t s){ return std::make_shared<TSCD>(num_arms, 0.005, 0.6, 2100 + s); });
 
@@ -382,7 +382,7 @@ int main(int argc, char** argv) {
         PolicyFactory pf = [&, mode, win, gm](std::uint64_t s) -> std::shared_ptr<Policy> {
             AdaptiveConfig cfg;
             cfg.mode = mode; cfg.window_size = win; cfg.gamma = gm; cfg.exploration_dim = feature_dim;
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
             add_features_adaptive(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9000 + s));
             return p;
         };
@@ -392,9 +392,9 @@ int main(int argc, char** argv) {
         drift_rows.push_back({name, run_multi(drift_env, pf, rounds, -1, window, streak_needed, ratio_threshold, num_seeds)});
     };
 
-    push_drift_adaptive("HCB3 Full", StatsMode::Full, window, gamma);
-    push_drift_adaptive("HCB3 SlidingWindow(500)", StatsMode::SlidingWindow, window, gamma);
-    push_drift_adaptive("HCB3 Discounted(0.995)", StatsMode::Discounted, window, gamma);
+    push_drift_adaptive("SOF Full", StatsMode::Full, window, gamma);
+    push_drift_adaptive("SOF SlidingWindow(500)", StatsMode::SlidingWindow, window, gamma);
+    push_drift_adaptive("SOF Discounted(0.995)", StatsMode::Discounted, window, gamma);
     push_drift_simple("SW-UCB(500)", [&](std::uint64_t s){ return std::make_shared<SlidingWindowUCB>(num_arms, window, 1000 + s); });
     push_drift_simple("Epsilon-Greedy(0.1)", [&](std::uint64_t s){ return std::make_shared<EpsilonGreedyPolicy>(num_arms, 0.1, 1100 + s); });
     for (std::size_t iv : intervals) {
@@ -404,11 +404,11 @@ int main(int argc, char** argv) {
     }
     {
         PolicyFactory pf = [&](std::uint64_t s) -> std::shared_ptr<Policy> {
-            auto p = std::make_shared<DAL_HCB3>(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
+            auto p = std::make_shared<DAL_SOF>(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
             add_features_dal(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9100 + s));
             return p;
         };
-        drift_rows.push_back({"DAL+HCB3 (P0)", run_multi(drift_env, pf, rounds, -1, window, streak_needed, ratio_threshold, num_seeds)});
+        drift_rows.push_back({"DAL+SOF (P0)", run_multi(drift_env, pf, rounds, -1, window, streak_needed, ratio_threshold, num_seeds)});
     }
     push_drift_simple("TS-CD (P0)", [&](std::uint64_t s){ return std::make_shared<TSCD>(num_arms, 0.005, 0.6, 2100 + s); });
     push_drift_simple("BOB-SW-UCB (P1)", [&](std::uint64_t s){

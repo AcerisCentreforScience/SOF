@@ -73,21 +73,21 @@ int main(int argc, char** argv) {
         if (which == 0) {
             AdaptiveConfig c; c.mode = StatsMode::Discounted; c.gamma = gamma;
             c.v1 = 1.0; c.v2 = 1.0; c.exploration_dim = feature_dim;
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, c, static_cast<std::uint64_t>(7000 + seed));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, c, static_cast<std::uint64_t>(7000 + seed));
             std::mt19937_64 r(static_cast<std::uint64_t>(9000 + seed));
             for (std::size_t i = 0; i < num_arms; ++i) p->set_feature(i, make_sparse_random(feature_dim, feature_nnz, r));
             return p;
         } else if (which == 1) {
             AdaptiveConfig c; c.mode = StatsMode::SlidingWindow; c.window_size = window;
             c.v1 = 1.0; c.v2 = 1.0; c.exploration_dim = feature_dim;
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, c, static_cast<std::uint64_t>(7000 + seed));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, c, static_cast<std::uint64_t>(7000 + seed));
             std::mt19937_64 r(static_cast<std::uint64_t>(9000 + seed));
             for (std::size_t i = 0; i < num_arms; ++i) p->set_feature(i, make_sparse_random(feature_dim, feature_nnz, r));
             return p;
         } else if (which == 2) {
             AdaptiveConfig c; c.mode = StatsMode::Full;
             c.v1 = 1.0; c.v2 = 1.0; c.exploration_dim = feature_dim;
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, c, static_cast<std::uint64_t>(7000 + seed));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, c, static_cast<std::uint64_t>(7000 + seed));
             std::mt19937_64 r(static_cast<std::uint64_t>(9000 + seed));
             for (std::size_t i = 0; i < num_arms; ++i) p->set_feature(i, make_sparse_random(feature_dim, feature_nnz, r));
             return p;
@@ -99,9 +99,9 @@ int main(int argc, char** argv) {
     std::cout << "===== Drift period sweep (non-stationary, 10 seeds)=====\n";
     std::cout << "rounds=" << rounds << " arms=" << num_arms << " amp=0.3(0.3~0.9) window=" << window << "\n";
     std::cout << std::left << std::setw(10) << "period"
-              << std::setw(24) << "HCB3-Disc"
-              << std::setw(24) << "HCB3-SW"
-              << std::setw(24) << "HCB3-Full"
+              << std::setw(24) << "SOF-Disc"
+              << std::setw(24) << "SOF-SW"
+              << std::setw(24) << "SOF-Full"
               << std::setw(24) << "SW-UCB"
               << std::setw(14) << "Disc-SW diff" << "\n";
     std::cout << std::string(120, '-') << "\n";
@@ -130,9 +130,9 @@ int main(int argc, char** argv) {
 
     std::cout << "\n===== Drift amplitude sweep (period 5000, 10 seeds)=====\n";
     std::cout << std::left << std::setw(10) << "amp"
-              << std::setw(24) << "HCB3-Disc"
-              << std::setw(24) << "HCB3-SW"
-              << std::setw(24) << "HCB3-Full"
+              << std::setw(24) << "SOF-Disc"
+              << std::setw(24) << "SOF-SW"
+              << std::setw(24) << "SOF-Full"
               << std::setw(24) << "SW-UCB"
               << std::setw(14) << "Disc-SW diff" << "\n";
     std::cout << std::string(120, '-') << "\n";

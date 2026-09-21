@@ -19,7 +19,7 @@ int main() {
     std::cout << "===== Exploration floor verification (stationary, 20000 rounds)=====\n";
     std::cout << "K=" << K << " gamma=" << gamma << "\n\n";
 
-    std::ofstream fout("/home/ubuntu/hcb3/build/explore_bound_result.txt");
+    std::ofstream fout("/home/ubuntu/sof/build/explore_bound_result.txt");
     fout << "===== Exploration floor verification (stationary, 20000 rounds)=====\n";
     fout << "K=" << K << " gamma=" << gamma << "\n";
     fout << "Note: Full n_eff=real pulls; Discounted n_eff<=1/(1-gamma)\n\n";
@@ -29,7 +29,7 @@ int main() {
         cfg.mode = mab::StatsMode::Full;
         cfg.gamma = gamma;
         cfg.v1 = 1.0; cfg.v2 = 1.0; cfg.xi = 0.0;
-        mab::AdaptiveHCB3Policy pol(K, cfg, 42);
+        mab::AdaptiveSOFPolicy pol(K, cfg, 42);
         for (std::size_t a = 0; a < K; ++a) {
             std::vector<mab::SparseEntry> e{mab::SparseEntry{a % feature_dim, 1.0}};
             pol.set_feature(a, mab::SparseVector(e));
@@ -61,7 +61,7 @@ int main() {
         cfg.mode = mab::StatsMode::Discounted;
         cfg.gamma = gamma;
         cfg.v1 = 1.0; cfg.v2 = 1.0; cfg.xi = 0.0;
-        mab::AdaptiveHCB3Policy pol(K, cfg, 42);
+        mab::AdaptiveSOFPolicy pol(K, cfg, 42);
         for (std::size_t a = 0; a < K; ++a) {
             std::vector<mab::SparseEntry> e{mab::SparseEntry{a % feature_dim, 1.0}};
             pol.set_feature(a, mab::SparseVector(e));

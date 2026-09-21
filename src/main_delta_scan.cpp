@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
                 auto env = mk_env(seed);
                 AdaptiveConfig c; c.mode = StatsMode::Discounted; c.gamma = gamma;
                 c.v1 = 1.0; c.v2 = 1.0; c.exploration_dim = feature_dim;
-                AdaptiveHCB3Policy p(num_arms, c, static_cast<std::uint64_t>(7000 + s));
+                AdaptiveSOFPolicy p(num_arms, c, static_cast<std::uint64_t>(7000 + s));
                 std::mt19937_64 r2(static_cast<std::uint64_t>(9000 + s));
                 for (std::size_t i = 0; i < num_arms; ++i) p.set_feature(i, make_sparse_random(feature_dim, feature_nnz, r2));
                 RunOut r = run_once(*env, p, rounds, sw);
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
             }
             {
                 auto env = mk_env(seed);
-                DAL_HCB3 p(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
+                DAL_SOF p(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
                 std::mt19937_64 r2(static_cast<std::uint64_t>(9100 + s));
                 for (std::size_t i = 0; i < num_arms; ++i) p.set_feature(i, make_sparse_random(feature_dim, feature_nnz, r2));
                 RunOut r = run_once(*env, p, rounds, sw);
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
                 auto env = mk_env(seed);
                 AdaptiveConfig c; c.mode = StatsMode::Full;
                 c.v1 = 1.0; c.v2 = 1.0; c.exploration_dim = feature_dim;
-                AdaptiveHCB3Policy p(num_arms, c, static_cast<std::uint64_t>(7000 + s));
+                AdaptiveSOFPolicy p(num_arms, c, static_cast<std::uint64_t>(7000 + s));
                 std::mt19937_64 r2(static_cast<std::uint64_t>(9000 + s));
                 for (std::size_t i = 0; i < num_arms; ++i) p.set_feature(i, make_sparse_random(feature_dim, feature_nnz, r2));
                 RunOut r = run_once(*env, p, rounds, sw);
@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
                   << "\n";
     }
 
-    std::cout << "\nNote: Disc-SW>0 means HCB3 beats SW-UCB; Full-DAL>0 means active detector beats Full\n";
+    std::cout << "\nNote: Disc-SW>0 means SOF beats SW-UCB; Full-DAL>0 means active detector beats Full\n";
     std::cout << "Delta sweep done.\n";
     return 0;
 }

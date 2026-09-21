@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "baselines.hpp"
 #include "nonstationary_policies.hpp"
@@ -78,9 +78,9 @@ private:
     std::size_t detections_{0};
 };
 
-class DAL_HCB3 : public Policy {
+class DAL_SOF : public Policy {
 public:
-    DAL_HCB3(std::size_t num_arms,
+    DAL_SOF(std::size_t num_arms,
              double v1 = 1.0,
              double v2 = 1.0,
              double ph_delta = 0.05,

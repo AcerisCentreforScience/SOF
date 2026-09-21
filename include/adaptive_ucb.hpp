@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "baselines.hpp"
 #include "sparse_vector.hpp"
@@ -123,9 +123,9 @@ private:
     double d_weight_{0.0};
 };
 
-class AdaptiveHCB3Policy : public Policy {
+class AdaptiveSOFPolicy : public Policy {
 public:
-    AdaptiveHCB3Policy(std::size_t num_arms, AdaptiveConfig cfg, std::uint64_t seed = 42)
+    AdaptiveSOFPolicy(std::size_t num_arms, AdaptiveConfig cfg, std::uint64_t seed = 42)
         : cfg_(cfg) {
         if (num_arms == 0) throw std::invalid_argument("num_arms must be > 0");
         arms_.resize(num_arms, AdaptiveArmStats(cfg_));

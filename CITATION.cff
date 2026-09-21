@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated paper."
+title: "On Memory Time-Scales and Parameter Robustness in Non-Stationary Multi-Armed Bandits"
+authors:
+  - family-names: Li
+    given-names: Jinxin
+    affiliation: "Aceris Centre for Science (ac4s), Hangzhou Aceris Intelligent Technology Co., Ltd."
+    email: jinxin.li@ac4s.ac.cn
+year: 2026
+license: MIT
+repository-code: "https://github.com/AcerisCentreforScience/SOF"
+type: software

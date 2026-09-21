@@ -132,11 +132,11 @@ void print_table(const std::string& title, const std::vector<Row>& rows) {
     }
 }
 
-void add_feat_adaptive(AdaptiveHCB3Policy& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
+void add_feat_adaptive(AdaptiveSOFPolicy& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
     std::mt19937_64 rng(seed);
     for (std::size_t i = 0; i < K; ++i) p.set_feature(i, make_sparse_random(dim, nnz, rng));
 }
-void add_feat_dal(DAL_HCB3& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
+void add_feat_dal(DAL_SOF& p, std::size_t K, std::size_t dim, std::size_t nnz, std::uint64_t seed) {
     std::mt19937_64 rng(seed);
     for (std::size_t i = 0; i < K; ++i) p.set_feature(i, make_sparse_random(dim, nnz, rng));
 }
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
     double gamma = 0.995;
     if (argc > 1) rounds = static_cast<std::size_t>(std::stoull(argv[1]));
 
-    std::cout << "HCB3 stationary benchmark (S3 + S4 ablation)\n";
+    std::cout << "SOF stationary benchmark (S3 + S4 ablation)\n";
     std::cout << "Params: rounds=" << rounds << " arms=" << num_arms
               << " feat_dim=" << feature_dim << " nnz/arm=" << feature_nnz
               << " seeds=" << num_seeds << " env=Bernoulli(0.2~0.8, stationary)\n";
@@ -172,19 +172,19 @@ int main(int argc, char** argv) {
     };
 
     std::vector<Row> s3;
-    auto hcb3_factory = [&](StatsMode mode, std::size_t win, double gm) {
+    auto sof_factory = [&](StatsMode mode, std::size_t win, double gm) {
         return [&, mode, win, gm](std::uint64_t s) -> std::shared_ptr<Policy> {
             AdaptiveConfig cfg;
             cfg.mode = mode; cfg.window_size = win; cfg.gamma = gm;
             cfg.v1 = 1.0; cfg.v2 = 1.0; cfg.exploration_dim = feature_dim;
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
             add_feat_adaptive(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9000 + s));
             return p;
         };
     };
-    s3.push_back({"HCB3 Full", run_multi(env_of, hcb3_factory(StatsMode::Full, window, gamma), rounds, window, num_seeds)});
-    s3.push_back({"HCB3 SlidingWindow(500)", run_multi(env_of, hcb3_factory(StatsMode::SlidingWindow, window, gamma), rounds, window, num_seeds)});
-    s3.push_back({"HCB3 Discounted(0.995)", run_multi(env_of, hcb3_factory(StatsMode::Discounted, window, gamma), rounds, window, num_seeds)});
+    s3.push_back({"SOF Full", run_multi(env_of, sof_factory(StatsMode::Full, window, gamma), rounds, window, num_seeds)});
+    s3.push_back({"SOF SlidingWindow(500)", run_multi(env_of, sof_factory(StatsMode::SlidingWindow, window, gamma), rounds, window, num_seeds)});
+    s3.push_back({"SOF Discounted(0.995)", run_multi(env_of, sof_factory(StatsMode::Discounted, window, gamma), rounds, window, num_seeds)});
     s3.push_back({"SW-UCB(500)", run_multi(env_of, [&](std::uint64_t s){ return std::make_shared<SlidingWindowUCB>(num_arms, window, 1000 + s); }, rounds, window, num_seeds)});
     s3.push_back({"Epsilon-Greedy(0.1)", run_multi(env_of, [&](std::uint64_t s){ return std::make_shared<EpsilonGreedyPolicy>(num_arms, 0.1, 1100 + s); }, rounds, window, num_seeds)});
     const std::size_t intervals[] = {250, 500, 1000, 2000, 5000, 10000};
@@ -192,8 +192,8 @@ int main(int argc, char** argv) {
         s3.push_back({"RestartUCB(" + std::to_string(iv) + ")", run_multi(env_of, [&, iv](std::uint64_t s){
             return std::make_shared<RestartUCB>(num_arms, iv, 1200 + s); }, rounds, window, num_seeds)});
     }
-    s3.push_back({"DAL+HCB3 (P0)", run_multi(env_of, [&](std::uint64_t s) -> std::shared_ptr<Policy> {
-        auto p = std::make_shared<DAL_HCB3>(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
+    s3.push_back({"DAL+SOF (P0)", run_multi(env_of, [&](std::uint64_t s) -> std::shared_ptr<Policy> {
+        auto p = std::make_shared<DAL_SOF>(num_arms, 1.0, 1.0, 0.005, 0.6, static_cast<std::uint64_t>(2000 + s));
         add_feat_dal(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9100 + s));
         return p;
     }, rounds, window, num_seeds)});
@@ -220,7 +220,7 @@ int main(int argc, char** argv) {
     std::vector<Row> s4;
     auto run_abl = [&](const std::string& name, AdaptiveConfig cfg) {
         PolicyFactory pf = [&, cfg](std::uint64_t s) -> std::shared_ptr<Policy> {
-            auto p = std::make_shared<AdaptiveHCB3Policy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
+            auto p = std::make_shared<AdaptiveSOFPolicy>(num_arms, cfg, static_cast<std::uint64_t>(7000 + s));
             add_feat_adaptive(*p, num_arms, feature_dim, feature_nnz, static_cast<std::uint64_t>(9000 + s));
             return p;
         };
@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
         auto c3 = base; c3.v2 = 0.0;
         auto c4 = base; c4.v1 = 0.0; c4.v2 = 0.0;
         auto c5 = base; c5.cap_variance = false;
-        run_abl("Full HCB3-Disc", base);
+        run_abl("Full SOF-Disc", base);
         run_abl("- sparse corr", c1);
         run_abl("- v1=0", c2);
         run_abl("- v2=0", c3);
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
         auto c1 = base; c1.sparse_correction = false;
         auto c4 = base; c4.v1 = 0.0; c4.v2 = 0.0;
         auto c5 = base; c5.cap_variance = false;
-        run_abl("Full HCB3-Full", base);
+        run_abl("Full SOF-Full", base);
         run_abl("Full - sparse corr", c1);
         run_abl("Full - no 2nd-order", c4);
         run_abl("Full - no cap", c5);
@@ -261,7 +261,7 @@ int main(int argc, char** argv) {
         base.v1 = 1.0; base.v2 = 1.0; base.exploration_dim = feature_dim;
         for (std::size_t w : {250UL, 500UL, 1000UL}) {
             auto c = base; c.window_size = w;
-            run_abl("HCB3-SW window=" + std::to_string(w), c);
+            run_abl("SOF-SW window=" + std::to_string(w), c);
         }
     }
     {
@@ -270,7 +270,7 @@ int main(int argc, char** argv) {
         base.v1 = 1.0; base.v2 = 1.0; base.exploration_dim = feature_dim;
         for (double g : {0.99, 0.995, 0.999}) {
             auto c = base; c.gamma = g;
-            std::ostringstream nm; nm << "HCB3-Disc gamma=" << g;
+            std::ostringstream nm; nm << "SOF-Disc gamma=" << g;
             run_abl(nm.str(), c);
         }
     }

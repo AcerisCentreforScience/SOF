@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "sparse_vector.hpp"
 
@@ -32,7 +32,7 @@ struct ArmStats {
     }
 };
 
-struct HCB3Config {
+struct SOFConfig {
     std::size_t exploration_dim{0};
     double v1{1.0};
     double v2{1.0};
@@ -40,9 +40,9 @@ struct HCB3Config {
     std::size_t total_rounds{1};
 };
 
-class HCB3Policy {
+class SOFPolicy {
 public:
-    HCB3Policy(std::size_t num_arms, HCB3Config config, std::uint64_t seed = 42)
+    SOFPolicy(std::size_t num_arms, SOFConfig config, std::uint64_t seed = 42)
         : config_(config), rng_(seed) {
         if (num_arms == 0) throw std::invalid_argument("num_arms must be > 0");
         arms_.resize(num_arms);
@@ -134,7 +134,7 @@ private:
         }
     }
 
-    HCB3Config config_;
+    SOFConfig config_;
     std::vector<ArmStats> arms_;
     SparseVector feature_sum_;
     std::unordered_map<std::size_t, bool> support_;
