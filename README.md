@@ -45,6 +45,14 @@ src/       one main file per experiment
 results/   reference outputs
 ```
 
+| File | Paper section |
+|---|---|
+| `main_explore_bound.cpp` | Theorem 1 (Fig. 7) |
+| `main_delta_scan.cpp` | Theorem 2 / Table 3 |
+| `main_drift_scan.cpp` | Theorem 3 (Fig. 4) |
+| `main_stationary.cpp` | Table 2, Theorem 1 |
+| `main_benchmark.cpp` | Full baseline comparison |
+
 ## Notes
 
 - The Open Bandit Dataset requires a separate download (see
